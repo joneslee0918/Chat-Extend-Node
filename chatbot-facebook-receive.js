@@ -1,7 +1,6 @@
 var _ = require('underscore');
 var moment = require('moment');
 var ChatContext = require('./lib/chat-context.js');
-var ChatLog = require('./lib/chat-log.js');
 var helpers = require('./lib/helpers/facebook.js');
 var fs = require('fs');
 var os = require('os');
@@ -17,7 +16,6 @@ module.exports = function(RED) {
 
     var self = this;
     this.botname = n.botname;
-    this.log = n.log;
 
     this.usernames = [];
     if (n.usernames) {
@@ -78,7 +76,8 @@ module.exports = function(RED) {
           payload = obj;
           return helpers.getOrFetchProfile(userId, self.bot)
         })
-        .then(function(profile) {
+        .then(function (profile) {
+
           // store some information
           chatContext.set('chatId', chatId);
           chatContext.set('messageId', botMsg.message.mid);
@@ -89,8 +88,7 @@ module.exports = function(RED) {
           chatContext.set('transport', 'facebook');
           chatContext.set('message', botMsg.message.text);
 
-          var chatLog = new ChatLog(chatContext);
-          return chatLog.log({
+          var msg = {
             payload: payload,
             originalMessage: {
               transport: 'facebook',
@@ -98,11 +96,7 @@ module.exports = function(RED) {
                 id: chatId
               }
             }
-          }, self.log)
-        })
-        .then(function (msg) {
-
-
+          };
 
           var currentConversationNode = chatContext.get('currentConversationNode');
           // if a conversation is going on, go straight to the conversation node, otherwise if authorized
@@ -111,6 +105,7 @@ module.exports = function(RED) {
             // void the current conversation
             chatContext.set('currentConversationNode', null);
             // emit message directly the node where the conversation stopped
+            console.log('Proxying to ' + currentConversationNode);
             RED.events.emit('node:' + currentConversationNode, msg);
           } else {
             facebookBot.emit('relay', msg);
@@ -472,6 +467,8 @@ module.exports = function(RED) {
       }
 
       var channelId = msg.payload.chatId;
+
+
       var context = node.context();
       var track = node.track;
       var chatId = msg.payload.chatId || (originalMessage && originalMessage.chat.id);
@@ -489,12 +486,7 @@ module.exports = function(RED) {
         chatContext.set('currentConversationNode_at', moment());
       }
 
-      var chatLog = new ChatLog(chatContext);
-
-      chatLog.log(msg, this.config.log)
-        .then(function() {
-          sendMessage(msg);
-        });
+      sendMessage(msg);
     });
   }
   RED.nodes.registerType('chatbot-facebook-send', FacebookOutNode);
