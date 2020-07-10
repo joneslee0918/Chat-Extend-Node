@@ -5,7 +5,7 @@ const NLPTrainBlock = require('../nodes/chatbot-nlp-train');
 const NLPBlock = require('../nodes/chatbot-nlp');
 
 require('../lib/platforms/telegram');
-require('../lib/platforms/slack/index');
+require('../lib/platforms/slack');
 
 describe('Chat nlp entity node', () => {
 

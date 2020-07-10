@@ -1,5 +1,5 @@
 
-const SlackServer = require('../lib/platforms/slack/index');
+const SlackServer = require('../lib/platforms/slack');
 const RegisterType = require('../lib/node-installer');
 const { GenericOutNode, GenericInNode, GenericBotNode } = require('../lib/sender-factory');
 
@@ -16,8 +16,7 @@ module.exports = function(RED) {
           botname: botConfiguration.botname,
           authorizedUsernames: botConfiguration.usernames,
           token: botConfiguration.token,
-          signingSecret: botConfiguration.signingSecret,
-          serverPort: botConfiguration.serverPort,
+          oauthToken : botConfiguration.oauthToken,
           contextProvider: node.contextProvider,
           logfile: botConfiguration.logfile,
           debug: botConfiguration.debug,
@@ -30,8 +29,7 @@ module.exports = function(RED) {
         usernames: config.usernames,
         botname: config.botname,
         token: node.credentials != null && node.credentials.token != null ? node.credentials.token.trim() : null,
-        signingSecret: node.credentials != null && node.credentials.signingSecret != null ? node.credentials.signingSecret.trim() : null,
-        serverPort: config.serverPort,
+        oauthToken: node.credentials != null && node.credentials.oauthToken != null ? node.credentials.oauthToken.trim() : null,
         debug: config.debug,
         logfile: config.log,
         username: config.username,
@@ -43,7 +41,7 @@ module.exports = function(RED) {
         token: {
           type: 'text'
         },
-        signingSecret: {
+        oauthToken: {
           type: 'text'
         }
       }

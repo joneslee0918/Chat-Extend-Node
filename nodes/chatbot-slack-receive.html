@@ -26,9 +26,6 @@
       },
       debug: {
         value: false
-      },
-      serverPort: {
-        value: 3001
       }
     },
     oneditprepare: function() {
@@ -51,7 +48,7 @@
       token: {
         type: 'text'
       },
-      signingSecret: {
+      oauthToken: {
         type: 'text'
       }
     },
@@ -75,15 +72,10 @@
       </div>
     </div>
     <div class="form-row">
-      <label for="node-config-input-signingSecret">Signing Secret</label>
-      <input type="text" id="node-config-input-signingSecret">
-    </div>
-    <div class="form-row">
-      <label for="node-config-input-serverPort">Web Hook Server Port</label>
-      <input type="text" id="node-config-input-serverPort">
+      <label for="node-config-input-oauthToken">OAuth Token</label>
+      <input type="text" id="node-config-input-oauthToken">
       <div class="redbot-form-hint">
-        The port the webhook will listen to. Due to some technical limitations, the webhooks for Slack will run on a standalone
-        server and not in the same Express instance of Node-RED.
+        OAuth Access Token - Used for retreiving private files.
       </div>
     </div>
     <div class="form-row">
