@@ -1,16 +1,6 @@
 const _ = require('underscore');
-
-const { ChatExpress } = require('chat-platform');
+const utils = require('../lib/helpers/utils');
 const RegisterType = require('../lib/node-installer');
-const {
-  isValidMessage,
-  getChatId,
-  getMessageId,
-  getTransport,
-  extractValue,
-  appendPayload
-} = require('../lib/helpers/utils');
-const MessageTemplate = require('../lib/message-template-async');
 
 module.exports = function(RED) {
   const registerType = RegisterType(RED);
@@ -21,47 +11,41 @@ module.exports = function(RED) {
     this.latitude = config.latitude;
     this.longitude = config.longitude;
     this.place = config.place;
+    this.transports = ['telegram', 'slack', 'facebook', 'viber'];
 
-    this.on('input', async function(msg, send, done) {
-      // send/done compatibility for node-red < 1.0
-      send = send || function() { node.send.apply(node, arguments) };
-      done = done || function(error) { node.error.call(node, error, msg) };
-      const sendPayload = appendPayload(send, msg);
-      // check if valid message
-      if (!isValidMessage(msg, node)) {
-        return;
-      }
-      const chatId = getChatId(msg);
-      const messageId = getMessageId(msg);
-      const template = MessageTemplate(msg, node);
-      const transport = getTransport(msg);
+    this.on('input', function(msg) {
+
+      var chatId = utils.getChatId(msg);
+      var messageId = utils.getMessageId(msg);
+
       // check transport compatibility
-      if (!ChatExpress.isSupported(transport, 'message')) {
-        done(`Node "message" is not supported by ${transport} transport`);
+      if (!utils.matchTransport(node, msg)) {
         return;
       }
 
-      let latitude = extractValue('float', 'latitude', node, msg, false);
-      let longitude = extractValue('float', 'longitude', node, msg, false);
-      const place = extractValue('string', 'place', node, msg, false);
+      var latitude = utils.extractValue('float', 'latitude', node, msg, false);
+      var longitude = utils.extractValue('float', 'longitude', node, msg, false);
+      var place = utils.extractValue('string', 'place', node, msg, false);
 
       latitude = _.isNumber(latitude) ? latitude : parseFloat(latitude);
       longitude = _.isNumber(longitude) ? longitude : parseFloat(longitude);
 
-      // payload
-      sendPayload({
+      // send out the message
+      msg.payload = {
         type: 'location',
         content: {
           latitude: latitude,
           longitude: longitude
         },
-        place: await template(place),
+        place: place,
         chatId: chatId,
         messageId: messageId,
         inbound: false
-      });
-      done();
+      };
+
+      node.send([msg, null]);
     });
+
   }
 
   registerType('chatbot-location', ChatBotLocation);
